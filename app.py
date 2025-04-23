@@ -6,26 +6,36 @@ Created on Mon Apr 21 09:43:14 2025
 """
 
 import numpy as np
-from flask import Flask, request, jsonify, render_template   #render_template helps to redirect to the initial homepage we have
+from flask import Flask, request, jsonify, render_template   # render_template helps to redirect to the initial homepage we have
 import pickle
 
-import urllib.request
 import os
+from azure.storage.blob import BlobServiceClient
+from dotenv import load_dotenv
 
-# Initialize flask app, load model and encoder
+# Load environment variables
+load_dotenv()
+AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+CONTAINER_NAME = "models"
+
+# Initialize flask app
 app = Flask(__name__)
 
-MODEL_URL = 'https://hdbmodel.blob.core.windows.net/models/RFGmodel.pkl'
-ENCODER_URL = 'https://hdbmodel.blob.core.windows.net/models/encoder.pkl'
+# model = pickle.load(open('RFGmodel.pkl', 'rb'))
+# encoder = pickle.load(open('encoder.pkl', 'rb'))
 
-# Download files only if not already present
-if not os.path.exists('RFGmodel.pkl'):
-    urllib.request.urlretrieve(MODEL_URL, 'RFGmodel.pkl')
-if not os.path.exists('encoder.pkl'):
-    urllib.request.urlretrieve(ENCODER_URL, 'encoder.pkl')
-    
-model = pickle.load(open('RFGmodel.pkl', 'rb'))
-encoder = pickle.load(open('encoder.pkl', 'rb'))
+# Initialize Azure Blob client
+blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
+
+# Helper to download blob and load as pickle object
+def load_pickle_from_blob(blob_name):
+    blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
+    blob_data = blob_client.download_blob().readall()
+    return pickle.loads(blob_data)
+
+# Load model and encoder
+model = load_pickle_from_blob("RFGmodel.pkl")
+encoder = load_pickle_from_blob("encoder.pkl")
 
 # define route notes to route API url to tell app where it should be directed to
 
