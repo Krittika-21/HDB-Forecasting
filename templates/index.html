@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDB Forecasting Model</title>
+</head>
+<body>
+
+    <h2>HDB Resale Price Prediction</h2>
+    <!-- when submit button is pressed in form, redirects to /predict page-->
+    <form action="/predict" method="POST">
+        <label for="year">Year of Purchase:</label><br>
+        <input type="text" id="year" name="year" required><br><br>
+        
+        <label for="month">Month of Purchase:</label><br>
+        <input type="text" id="month" name="month" required><br><br>
+
+        <label for="flat_age">Flat Age (in years):</label><br>
+        <input type="text" id="flat_age" name="flat_age" required><br><br>
+
+        <label for="remaining_years_lease">Remaining Years of Lease:</label><br>
+        <input type="text" id="remaining_years_lease" name="remaining_years_lease" required><br><br>
+        
+        <label for="floor_area_sqm">Floor Area (in sqm):</label><br>
+        <input type="text" id="floor_area_sqm" name="floor_area_sqm" required><br><br>
+        
+        <!-- Dropdown for categorical features-->
+        
+        <label for="town">Town:</label><br>
+        <!--<input type="text" id="town" name="town" required><br><br>-->
+        <select name ="town" id="town">
+            <option value="ANG MO KIO">ANG MO KIO</option>
+            <option value="BEDOK">BEDOK</option>
+            <option value="BISHAN">BISHAN</option>
+            <option value="BUKIT BATOK">BUKIT BATOK</option>
+            <option value="BUKIT MERAH">BUKIT MERAH</option>
+            <option value="BUKIT PANJANG">BUKIT PANJANG</option>
+            <option value="BUKIT TIMAH">BUKIT TIMAH</option>
+            <option value="CENTRAL AREA">CENTRAL AREA</option>
+            <option value="CHOA CHU KANG">CHOA CHU KANG</option>
+            <option value="CLEMENTI">CLEMENTI</option>
+            <option value="GEYLANG">GEYLANG</option>
+            <option value="HOUGANG">HOUGANG</option>
+            <option value="JURONG EAST">JURONG EAST</option>
+            <option value="JURONG WEST">JURONG WEST</option>
+            <option value="KALLANG/WHAMPOA">KALLANG/WHAMPOA</option>
+            <option value="MARINE PARADE">MARINE PARADE</option>
+            <option value="PASIR RIS">PASIR RIS</option>
+            <option value="PUNGGOL">PUNGGOL</option>
+            <option value="QUEENSTOWN">QUEENSTOWN</option>
+            <option value="SEMBAWANG">SEMBAWANG</option>
+            <option value="SENGKANG">SENGKANG</option>
+            <option value="SERANGOON">SERANGOON</option>
+            <option value="TAMPINES">TAMPINES</option>
+            <option value="TOA PAYOH">TOA PAYOH</option>
+            <option value="WOODLANDS">WOODLANDS</option>
+            <option value="YISHUN">YISHUN</option>
+        </select><br><br>
+        
+        <label for="flat_type">Flat Type:</label><br>
+        <!--<input type="text" id="flat_type" name="flat_type" required><br><br>-->
+        <select name ="flat_type" id="flat_type">
+            <option value="1 ROOM">1 ROOM</option>
+            <option value="2 ROOM">2 ROOM</option>
+            <option value="3 ROOM">3 ROOM</option>
+            <option value="4 ROOM">4 ROOM</option>
+            <option value="5 ROOM">5 ROOM</option>
+            <option value="EXECUTIVE">EXECUTIVE</option>
+            <option value="MULTI-GENERATION">MULTI-GENERATION</option>
+        </select><br><br>
+        
+        <label for="flat_model">Flat Model:</label><br>
+        <!--<input type="text" id="flat_model" name="flat_model" required><br><br>-->
+        <select name ="flat_model" id="flat_model">
+            <option value="2-room">2-room</option>
+            <option value="3Gen">3Gen</option>
+            <option value="Adjoined flat">Adjoined flat</option>
+            <option value="Apartment">Apartment</option>
+            <option value="DBSS">DBSS</option>
+            <option value="Improved">Improved</option>
+            <option value="Improved-Maisonette">Improved-Maisonette</option>
+            <option value="Maisonette">Maisonette</option>
+            <option value="Model A">Model A</option>
+            <option value="Model A-Maisonette">Model A-Maisonette</option>
+            <option value="Model A2">Model A2</option>
+            <option value="Multi Generation">Multi Generation</option>
+            <option value="New Generation">New Generation</option>
+            <option value="Premium Apartment">Premium Apartment</option>
+            <option value="Premium Apartment Loft">Premium Apartment Loft</option>
+            <option value="Premium Maisonette">Premium Maisonette</option>
+            <option value="Simplified">Simplified</option>
+            <option value="Standard">Standard</option>
+            <option value="Terrace">Terrace</option>
+            <option value="Type S1">Type S1</option>
+            <option value="Type S2">Type S2</option>
+        </select><br><br>
+
+        <input type="submit" value="Predict">
+    </form>
+    
+    <!-- Jinja tag to check if prediction_text is passed from Flask backend, then display predicted text on front-end-->
+    {% if prediction_text %}
+    <h3>{{ prediction_text }}</h3>
+    {% endif %}
+</body>
+</html>
