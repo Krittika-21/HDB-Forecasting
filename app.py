@@ -9,8 +9,21 @@ import numpy as np
 from flask import Flask, request, jsonify, render_template   #render_template helps to redirect to the initial homepage we have
 import pickle
 
+import urllib.request
+import os
+
 # Initialize flask app, load model and encoder
 app = Flask(__name__)
+
+MODEL_URL = 'https://hdbmodel.blob.core.windows.net/models/RFGmodel.pkl'
+ENCODER_URL = 'https://hdbmodel.blob.core.windows.net/models/encoder.pkl'
+
+# Download files only if not already present
+if not os.path.exists('RFGmodel.pkl'):
+    urllib.request.urlretrieve(MODEL_URL, 'RFGmodel.pkl')
+if not os.path.exists('encoder.pkl'):
+    urllib.request.urlretrieve(ENCODER_URL, 'encoder.pkl')
+    
 model = pickle.load(open('RFGmodel.pkl', 'rb'))
 encoder = pickle.load(open('encoder.pkl', 'rb'))
 
