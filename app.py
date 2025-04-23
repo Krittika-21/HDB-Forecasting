@@ -11,8 +11,8 @@ import pickle
 
 # Initialize flask app, load model and encoder
 app = Flask(__name__)
-model = pickle.load(open('C:/Users/kritt/OneDrive/Desktop/ST Logs/hdb forecast model/RFGmodel.pkl', 'rb'))
-encoder = pickle.load(open('C:/Users/kritt/OneDrive/Desktop/ST Logs/hdb forecast model/encoder.pkl', 'rb'))
+model = pickle.load(open('RFGmodel.pkl', 'rb'))
+encoder = pickle.load(open('encoder.pkl', 'rb'))
 
 # define route notes to route API url to tell app where it should be directed to
 
