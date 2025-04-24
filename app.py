@@ -24,8 +24,8 @@ app = Flask(__name__)
 # Model and encoder blobs loading from Azure Blob Storage (load from Azure)
 
 # Initial method: Load model and encoder upon startup
-# model_sas_url = "https://hdbmodel.blob.core.windows.net/models/RFGmodel.pkl?sp=r&st=2025-04-24T02:01:07Z&se=2025-05-30T10:01:07Z&spr=https&sv=2024-11-04&sr=b&sig=2ZO0uL7jIvpq4BV5W%2BxKRxDzhECtA7v%2F%2FN%2F8muY7xJs%3D"
-# encoder_sas_url = "https://hdbmodel.blob.core.windows.net/models/encoder.pkl?sp=r&st=2025-04-24T01:58:46Z&se=2025-05-30T09:58:46Z&spr=https&sv=2024-11-04&sr=b&sig=oDbSh9UUN3AseMHaOzfTBLjd%2BXPU2I5z15XoIRqi1OY%3D"
+model_sas_url = "https://hdbmodel.blob.core.windows.net/models/RFGmodel.pkl?sp=r&st=2025-04-24T02:01:07Z&se=2025-05-30T10:01:07Z&spr=https&sv=2024-11-04&sr=b&sig=2ZO0uL7jIvpq4BV5W%2BxKRxDzhECtA7v%2F%2FN%2F8muY7xJs%3D"
+encoder_sas_url = "https://hdbmodel.blob.core.windows.net/models/encoder.pkl?sp=r&st=2025-04-24T01:58:46Z&se=2025-05-30T09:58:46Z&spr=https&sv=2024-11-04&sr=b&sig=oDbSh9UUN3AseMHaOzfTBLjd%2BXPU2I5z15XoIRqi1OY%3D"
 # model_bytes = requests.get(model_sas_url).content
 # encoder_bytes = requests.get(encoder_sas_url).content
 # model = pickle.load(io.BytesIO(model_bytes))
