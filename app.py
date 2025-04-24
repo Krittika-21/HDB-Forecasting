@@ -23,8 +23,8 @@ import pickle
 # Initialize flask app
 app = Flask(__name__)
 
-model = pickle.load(open('RFGmodel.pkl', 'rb'))
-encoder = pickle.load(open('encoder.pkl', 'rb'))
+# model = pickle.load(open('RFGmodel.pkl', 'rb'))
+# encoder = pickle.load(open('encoder.pkl', 'rb'))
 
 # # Initialize Azure Blob client
 # blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
@@ -48,6 +48,10 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    #TEMPORARY 
+    model = pickle.load(open('RFGmodel.pkl', 'rb'))
+    encoder = pickle.load(open('encoder.pkl', 'rb'))
+    
     '''
     For rendering results on HTML GUI
     '''
