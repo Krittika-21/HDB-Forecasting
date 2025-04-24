@@ -6,47 +6,50 @@ Created on Mon Apr 21 09:43:14 2025
 """
 
 import numpy as np
-# import pandas as pd
-from flask import Flask, request, jsonify, render_template   # render_template helps to redirect to the initial homepage we have
+from flask import Flask, request, jsonify, render_template
 import pickle
-# import joblib
-
 import io
 import requests
+import logging
 
-# Initialize flask app
+# Initialize Flask app
 app = Flask(__name__)
 
-# Model and encoder loading for Flask App
-# model = pickle.load(open('RFGmodel.pkl', 'rb'))
-# encoder = pickle.load(open('encoder.pkl', 'rb'))
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Model and encoder blobs loading from Azure Blob Storage (load from Azure)
-
-# Initial method: Load model and encoder upon startup
-model_sas_url = "https://hdbmodel.blob.core.windows.net/models/RFGmodel.pkl?sp=r&st=2025-04-24T02:01:07Z&se=2025-05-30T10:01:07Z&spr=https&sv=2024-11-04&sr=b&sig=2ZO0uL7jIvpq4BV5W%2BxKRxDzhECtA7v%2F%2FN%2F8muY7xJs%3D"
-encoder_sas_url = "https://hdbmodel.blob.core.windows.net/models/encoder.pkl?sp=r&st=2025-04-24T01:58:46Z&se=2025-05-30T09:58:46Z&spr=https&sv=2024-11-04&sr=b&sig=oDbSh9UUN3AseMHaOzfTBLjd%2BXPU2I5z15XoIRqi1OY%3D"
-# model_bytes = requests.get(model_sas_url).content
-# encoder_bytes = requests.get(encoder_sas_url).content
-# model = pickle.load(io.BytesIO(model_bytes))
-# encoder = pickle.load(io.BytesIO(encoder_bytes))
-
-# Updated method: Lazy load (don't load model on startup, but rather only when predict is clicked)
+# Lazy loading model and encoder from Azure Blob Storage
 model = None
 encoder = None
+
+# Define your actual SAS URLs
+model_sas_url = "https://hdbmodel.blob.core.windows.net/models/RFGmodel.pkl?sp=r&st=2025-04-24T02:01:07Z&se=2025-05-30T10:01:07Z&spr=https&sv=2024-11-04&sr=b&sig=2ZO0uL7jIvpq4BV5W%2BxKRxDzhECtA7v%2F%2FN%2F8muY7xJs%3D"
+encoder_sas_url = "https://hdbmodel.blob.core.windows.net/models/encoder.pkl?sp=r&st=2025-04-24T01:58:46Z&se=2025-05-30T09:58:46Z&spr=https&sv=2024-11-04&sr=b&sig=oDbSh9UUN3AseMHaOzfTBLjd%2BXPU2I5z15XoIRqi1OY%3D"
+
 def load_model_and_encoder():
     global model, encoder
-    # only download model and encoder the first time predict button is clicked
     if model is None or encoder is None:
-        print("Downloading model and encoder from Azure Blob Storage...")
-        model_bytes = requests.get(model_sas_url).content
-        encoder_bytes = requests.get(encoder_sas_url).content
-        model = pickle.load(io.BytesIO(model_bytes))
-        encoder = pickle.load(io.BytesIO(encoder_bytes))
+        try:
+            logger.info("Downloading model and encoder from Azure Blob Storage...")
+            model_response = requests.get(model_sas_url)
+            encoder_response = requests.get(encoder_sas_url)
 
-# define route notes to route API url to tell app where it should be directed to
+            model_response.raise_for_status()
+            encoder_response.raise_for_status()
 
-#Start up page
+            model = pickle.load(io.BytesIO(model_response.content))
+            encoder = pickle.load(io.BytesIO(encoder_response.content))
+            logger.info("Model and encoder loaded successfully.")
+
+        except requests.exceptions.RequestException as req_err:
+            logger.error(f"Error fetching from Azure Blob Storage: {req_err}")
+        except pickle.UnpicklingError as pkl_err:
+            logger.error(f"Error unpickling model or encoder: {pkl_err}")
+        except Exception as e:
+            logger.error(f"Unexpected error loading model/encoder: {e}")
+
+# Startup page
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -54,11 +57,9 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     load_model_and_encoder()
-    
-    '''
-    For rendering results on HTML GUI
-    '''
-    # Get features from the form
+    if model is None or encoder is None:
+        return render_template('index.html', prediction_text="Error: Model could not be loaded. Check server logs.")
+
     try:
         year = int(request.form['year'])
         month = int(request.form['month'])
@@ -68,59 +69,51 @@ def predict():
         town = request.form['town']
         flat_type = request.form['flat_type']
         flat_model = request.form['flat_model']
-        
+
     except KeyError:
         return render_template('index.html', prediction_text="Please provide valid input values.")
-    
-    # Combine features in the same order as the model expects
-    input_features = [year, month, flat_age, remaining_lease, floor_area, town, flat_type, flat_model]
-    
-    # Transform the categorical data with the encoder (make sure it expects the same number of features)
-    flat_model_encoded = encoder.transform([input_features[5:]]).flatten()
-    
-    # Concatenate the numerical features with the encoded flat_model
-    features = np.array([year, month, flat_age, remaining_lease, floor_area] + list(flat_model_encoded)).reshape(1, -1)
 
-    # Prediction using the model
-    prediction = model.predict(features)
-    output = round(prediction[0], 2)
+    try:
+        input_features = [year, month, flat_age, remaining_lease, floor_area, town, flat_type, flat_model]
+        flat_model_encoded = encoder.transform([input_features[5:]]).flatten()
+        features = np.array([year, month, flat_age, remaining_lease, floor_area] + list(flat_model_encoded)).reshape(1, -1)
+        prediction = model.predict(features)
+        output = round(prediction[0], 2)
+        return render_template('index.html', prediction_text=f'Predicted resale price of flat is ${output}')
+    
+    except Exception as e:
+        logger.error(f"Prediction failed: {e}")
+        return render_template('index.html', prediction_text="Prediction failed due to internal error.")
 
-    return render_template('index.html', prediction_text=f'Predicted resale price of flat is ${output}')
-
-@app.route('/predict_api_json', methods =['POST'])
+@app.route('/predict_api_json', methods=['POST'])
 def predict_api_json():
     load_model_and_encoder()
+    if model is None or encoder is None:
+        return jsonify({'error': 'Model could not be loaded. Check server logs for details.'}), 500
 
-    '''
-    For direct API calls (by passing in json file)
-    '''
-    # Get data from json request
-    data = request.get_json(force=True)
-    
-    # Extract features from JSON
-    year = data.get('year')
-    month = data.get('month')
-    flat_age = data.get('flat_age')
-    remaining_lease = data.get('remaining_years_lease')
-    floor_area = data.get('floor_area_sqm')
-    town = data.get('town')
-    flat_type = data.get('flat_type')
-    flat_model = data.get('flat_model')
-    
-    # One-hot encode categorical features
-    encoded = encoder.transform([[town, flat_type, flat_model]])
-    
-    # Combine with numerical features (using numpy's concatenate function)
-    input_arr = np.concatenate(([year, month, flat_age, remaining_lease, floor_area], encoded.flatten()))
-    
-    # Prediction by model
-    prediction = model.predict([input_arr])
-    output = prediction[0]
-    
-    # Log the prediction to console
-    print(f"Prediction: The predicted resale price is ${output}")
-    
-    return jsonify({'Predicted Resale Price': round(output, 2)})
+    try:
+        data = request.get_json(force=True)
+
+        year = data.get('year')
+        month = data.get('month')
+        flat_age = data.get('flat_age')
+        remaining_lease = data.get('remaining_years_lease')
+        floor_area = data.get('floor_area_sqm')
+        town = data.get('town')
+        flat_type = data.get('flat_type')
+        flat_model = data.get('flat_model')
+
+        encoded = encoder.transform([[town, flat_type, flat_model]])
+        input_arr = np.concatenate(([year, month, flat_age, remaining_lease, floor_area], encoded.flatten()))
+        prediction = model.predict([input_arr])
+        output = round(prediction[0], 2)
+
+        logger.info(f"API Prediction: ${output}")
+        return jsonify({'Predicted Resale Price': output})
+
+    except Exception as e:
+        logger.error(f"API prediction failed: {e}")
+        return jsonify({'error': 'Prediction failed due to internal error.'}), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000)
