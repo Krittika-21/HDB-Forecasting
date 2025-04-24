@@ -6,7 +6,7 @@ Created on Mon Apr 21 09:43:14 2025
 """
 
 import numpy as np
-import pandas as pd
+# import pandas as pd
 from flask import Flask, request, jsonify, render_template   # render_template helps to redirect to the initial homepage we have
 import pickle
 # import joblib
