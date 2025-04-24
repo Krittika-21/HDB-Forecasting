@@ -1,36 +1,35 @@
-name: Deploy Flask App to Azure
+name: Deploy Flask App to Azure Web App
 
 on:
   push:
     branches:
-      - main  # Adjust if your branch name is different
+      - main   # Trigger this action when you push to the main branch
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest   # Run this job on the latest version of Ubuntu
 
     steps:
+      # Step 1: Checkout code from GitHub
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Set up Python 3.9
       - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
           python-version: '3.9'
 
+      # Step 3: Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Optional: only include if you have tests
-      - name: Skip tests (no tests set up yet)
-        run: echo "No tests to run"
-
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: HDB-Forecasting  # 🔁 Replace with your actual Azure Web App name
-          slot-name: production
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}  # 🔁 Make sure this secret is correctly created
-          package: .
+      # Step 4: Push code to Azure using Git
+      - name: Push code to Azure
+        run: |
+          git push https://krittika2101@hdb-forecasting.scm.azurewebsites.net:443/hdb-forecasting.git main
+        env:
+          GIT_AUTHOR_NAME: 'GitHub Actions'
+          GIT_AUTHOR_EMAIL: 'actions@github.com'
