@@ -18,20 +18,31 @@ import requests
 app = Flask(__name__)
 
 # Model and encoder loading for Flask App
-
 # model = pickle.load(open('RFGmodel.pkl', 'rb'))
 # encoder = pickle.load(open('encoder.pkl', 'rb'))
 
 # Model and encoder blobs loading from Azure Blob Storage (load from Azure)
 
-model_sas_url = "https://hdbmodel.blob.core.windows.net/models/RFGmodel.pkl?sp=r&st=2025-04-24T02:01:07Z&se=2025-05-30T10:01:07Z&spr=https&sv=2024-11-04&sr=b&sig=2ZO0uL7jIvpq4BV5W%2BxKRxDzhECtA7v%2F%2FN%2F8muY7xJs%3D"
-encoder_sas_url = "https://hdbmodel.blob.core.windows.net/models/encoder.pkl?sp=r&st=2025-04-24T01:58:46Z&se=2025-05-30T09:58:46Z&spr=https&sv=2024-11-04&sr=b&sig=oDbSh9UUN3AseMHaOzfTBLjd%2BXPU2I5z15XoIRqi1OY%3D"
+# Initial method: Load model and encoder upon startup
+# model_sas_url = "https://hdbmodel.blob.core.windows.net/models/RFGmodel.pkl?sp=r&st=2025-04-24T02:01:07Z&se=2025-05-30T10:01:07Z&spr=https&sv=2024-11-04&sr=b&sig=2ZO0uL7jIvpq4BV5W%2BxKRxDzhECtA7v%2F%2FN%2F8muY7xJs%3D"
+# encoder_sas_url = "https://hdbmodel.blob.core.windows.net/models/encoder.pkl?sp=r&st=2025-04-24T01:58:46Z&se=2025-05-30T09:58:46Z&spr=https&sv=2024-11-04&sr=b&sig=oDbSh9UUN3AseMHaOzfTBLjd%2BXPU2I5z15XoIRqi1OY%3D"
+# model_bytes = requests.get(model_sas_url).content
+# encoder_bytes = requests.get(encoder_sas_url).content
+# model = pickle.load(io.BytesIO(model_bytes))
+# encoder = pickle.load(io.BytesIO(encoder_bytes))
 
-model_bytes = requests.get(model_sas_url).content
-encoder_bytes = requests.get(encoder_sas_url).content
-
-model = pickle.load(io.BytesIO(model_bytes))
-encoder = pickle.load(io.BytesIO(encoder_bytes))
+# Updated method: Lazy load (don't load model on startup, but rather only when predict is clicked)
+model = None
+encoder = None
+def load_model_and_encoder():
+    global model, encoder
+    # only download model and encoder the first time predict button is clicked
+    if model is None or encoder is None:
+        print("Downloading model and encoder from Azure Blob Storage...")
+        model_bytes = requests.get(model_sas_url).content
+        encoder_bytes = requests.get(encoder_sas_url).content
+        model = pickle.load(io.BytesIO(model_bytes))
+        encoder = pickle.load(io.BytesIO(encoder_bytes))
 
 # define route notes to route API url to tell app where it should be directed to
 
@@ -42,6 +53,7 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    load_model_and_encoder()
     
     '''
     For rendering results on HTML GUI
@@ -77,6 +89,8 @@ def predict():
 
 @app.route('/predict_api_json', methods =['POST'])
 def predict_api_json():
+    load_model_and_encoder()
+
     '''
     For direct API calls (by passing in json file)
     '''
