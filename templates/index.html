@@ -31,6 +31,7 @@
         <label for="town">Town:</label><br>
         <!--<input type="text" id="town" name="town" required><br><br>-->
         <select name ="town" id="town">
+            <option value="" disabled selected>Select Town</option> <!-- Placeholder option -->
             <option value="ANG MO KIO">ANG MO KIO</option>
             <option value="BEDOK">BEDOK</option>
             <option value="BISHAN">BISHAN</option>
@@ -62,6 +63,7 @@
         <label for="flat_type">Flat Type:</label><br>
         <!--<input type="text" id="flat_type" name="flat_type" required><br><br>-->
         <select name ="flat_type" id="flat_type">
+            <option value="" disabled selected>Select Flat Type</option> <!-- Placeholder option -->
             <option value="1 ROOM">1 ROOM</option>
             <option value="2 ROOM">2 ROOM</option>
             <option value="3 ROOM">3 ROOM</option>
@@ -74,6 +76,7 @@
         <label for="flat_model">Flat Model:</label><br>
         <!--<input type="text" id="flat_model" name="flat_model" required><br><br>-->
         <select name ="flat_model" id="flat_model">
+            <option value="" disabled selected>Select Flat Model</option> <!-- Placeholder option -->
             <option value="2-room">2-room</option>
             <option value="3Gen">3Gen</option>
             <option value="Adjoined flat">Adjoined flat</option>
@@ -101,8 +104,9 @@
     </form>
     
     <!-- Jinja tag to check if prediction_text is passed from Flask backend, then display predicted text on front-end-->
+    <hr>
     {% if prediction_text %}
-    <h3>{{ prediction_text }}</h3>
+    <h3 style="color: green;">{{ prediction_text }}</h3>
     {% endif %}
 </body>
 </html>

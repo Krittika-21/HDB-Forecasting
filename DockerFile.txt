@@ -1,0 +1,18 @@
+# Use the Azure ML base image with OpenMPI for Ubuntu 20.04
+FROM mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04
+
+# Install the necessary Python packages
+RUN pip install --upgrade pip
+RUN pip install flask joblib scikit-learn numpy pandas
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the Flask app files (app.py, index.html, etc.) into the container
+COPY . /app
+
+# Expose the port that Flask will run on
+EXPOSE 5000
+
+# Run the Flask app when the container starts
+CMD ["python", "app.py"]

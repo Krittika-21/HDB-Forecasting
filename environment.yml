@@ -1,0 +1,12 @@
+name: hdb-forecasting-env
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - pip:
+      - flask
+      - numpy
+      - scikit-learn
+      - joblib
+      - azureml-sdk
+      - azureml-defaults
